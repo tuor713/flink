@@ -26,6 +26,7 @@ import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -36,6 +37,9 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.util.Collector;
+import org.apache.kafka.common.serialization.Serdes;
+import producer.FixOfferingFactory;
+import quickfix.Message;
 import scala.Char;
 
 import java.io.IOException;
@@ -88,11 +92,13 @@ public class StreamingJob {
 		props.setProperty("zookeeper.connect", "localhost:2181");
 		props.setProperty("group.id", "flink.test");
 
-		FlinkKafkaConsumer<Offering> consumer = new FlinkKafkaConsumer<>("offerings", new AvroDeserializer<>(Offering.class), props);
+		FlinkKafkaConsumer<String> consumer = new FlinkKafkaConsumer<>("offerings", new SimpleStringSchema(), props);
 		consumer.setStartFromEarliest();
 
-		DataStream<Offering> stream = env.addSource(consumer);
-		KeyedStream<Offering,CharSequence> kstream = stream.keyBy(Offering::getCUSIP);
+		DataStream<String> stream = env.addSource(consumer);
+		KeyedStream<Offering,CharSequence> kstream =
+				stream.map(s -> FixOfferingFactory.fixToOffering(new Message(s), "VENUE"))
+						.keyBy(Offering::getCUSIP);
 		kstream.process(new StackBuilder()).print();
 
 		env.execute("Flink Streaming Java API Skeleton");
