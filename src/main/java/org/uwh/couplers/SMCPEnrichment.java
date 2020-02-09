@@ -44,7 +44,7 @@ public class SMCPEnrichment {
         }
 
         @Override
-        public void open(Configuration parameters) throws Exception {
+        public void open(Configuration parameters) {
             commonSecurityState = getRuntimeContext().getState(new ValueStateDescriptor<>("commonSecurityId", new TupleTypeInfo<>(TypeInformation.of(CommonSecurityIdType.class), TypeInformation.of(String.class))));
             latestPayloads = getRuntimeContext().getMapState(new MapStateDescriptor<>("latestPayloads", String.class, clazz));
         }
