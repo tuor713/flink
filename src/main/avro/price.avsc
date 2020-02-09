@@ -1,0 +1,27 @@
+{
+  "namespace": "gsp",
+  "type": "record",
+  "name": "Price",
+  "fields": [
+    {
+      "name": "CommonSecurityIdType",
+      "type": ["null", {
+        "name": "CommonSecurityIdType",
+        "type": "enum",
+        "symbols": ["SMCP", "GSP"]
+      }]
+    },
+    {
+      "name": "CommonSecurityId",
+      "type": ["null", "string"]
+    },
+    {
+      "name": "ISIN",
+      "type": "string"
+    },
+    {
+      "name": "Price",
+      "type": "double"
+    }
+  ]
+}
