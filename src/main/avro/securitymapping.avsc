@@ -1,0 +1,36 @@
+{
+  "namespace": "gsp",
+  "type": "record",
+  "name": "SecurityMapping",
+  "fields": [
+    {
+      "name": "SecurityIdType",
+      "type": {
+        "type": "enum",
+        "name": "SecurityIdType",
+        "symbols": ["SMCP", "CSP", "SCSP", "ISIN", "GENERIC_CUSIP", "SEDOL"]
+      }
+    },
+    {
+      "name": "SecurityId",
+      "type": "string"
+    },
+    {
+      "name": "CommonSecurityIdType",
+      "type": {
+        "name": "CommonSecurityIdType",
+        "type": "enum",
+        "symbols": ["SMCP", "GSP"]
+      }
+    },
+    {
+      "name": "CommonSecurityId",
+      "type": "string"
+    },
+    {
+      "name": "AuditDateTimeUTC",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 package org.uwh.couplers;
 
+import gsp.SecurityIdType;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.test.util.MiniClusterResourceConfiguration;
@@ -52,7 +53,7 @@ public class SMCEnrichmentTest {
         DataStream<Price> prices = StreamBuilder.empty(Price.class).delay(50).item(price("ABC", 101)).build(env);
         DataStream<Security> securities = StreamBuilder.empty(Security.class).item(security("123", "", "ABC", true, 1)).build(env);
 
-        SMCPEnrichment.smcEnrichment(prices, securities, p -> p.isin, sec -> sec.isin, Price::withSMCP, Price::getIsin, Price.class).addSink(sink);
+        SMCPEnrichment.smcEnrichment(prices, securities, p -> p.isin, sec -> sec.xrefs.get(SecurityIdType.ISIN), Price::withSMCP, Price::getIsin, Price.class).addSink(sink);
         env.execute();
 
         assertEquals(1, sink.size());
@@ -64,7 +65,7 @@ public class SMCEnrichmentTest {
         DataStream<Price> prices = StreamBuilder.empty(Price.class).item(price("ABC", 101)).build(env);
         DataStream<Security> securities = StreamBuilder.empty(Security.class).delay(50).item(security("123", "", "ABC", true, 1)).build(env);
 
-        SMCPEnrichment.smcEnrichment(prices, securities, p -> p.isin, sec -> sec.isin, Price::withSMCP, Price::getIsin, Price.class).addSink(sink);
+        SMCPEnrichment.smcEnrichment(prices, securities, p -> p.isin, sec -> sec.xrefs.get(SecurityIdType.ISIN), Price::withSMCP, Price::getIsin, Price.class).addSink(sink);
         env.execute();
 
         assertEquals(1, sink.size());
@@ -76,7 +77,7 @@ public class SMCEnrichmentTest {
         DataStream<Price> prices = StreamBuilder.empty(Price.class).item(price("ABC", 101)).item(price("ABC", 102)).build(env);
         DataStream<Security> securities = StreamBuilder.empty(Security.class).delay(50).item(security("123", "", "ABC", true, 1)).build(env);
 
-        SMCPEnrichment.smcEnrichment(prices, securities, p -> p.isin, sec -> sec.isin, Price::withSMCP, Price::getIsin, Price.class).addSink(sink);
+        SMCPEnrichment.smcEnrichment(prices, securities, p -> p.isin, sec -> sec.xrefs.get(SecurityIdType.ISIN), Price::withSMCP, Price::getIsin, Price.class).addSink(sink);
         env.execute();
 
         assertEquals(2, sink.size());
@@ -96,7 +97,7 @@ public class SMCEnrichmentTest {
                 .item(security("234", "", "ABC", true, 1))
                 .build(env);
 
-        SMCPEnrichment.smcEnrichment(prices, securities, p -> p.isin, sec -> sec.isin, Price::withSMCP, Price::getIsin, Price.class).addSink(sink);
+        SMCPEnrichment.smcEnrichment(prices, securities, p -> p.isin, sec -> sec.xrefs.get(SecurityIdType.ISIN), Price::withSMCP, Price::getIsin, Price.class).addSink(sink);
         env.execute();
 
         assertEquals(2, sink.size());
@@ -127,9 +128,10 @@ public class SMCEnrichmentTest {
     private Security security(String smcp, String cusip, String isin, boolean isActive, int version) {
         Security sec = new Security();
         sec.smcp = smcp;
-        sec.cusip = cusip;
-        sec.isin = isin;
-        sec.isActive = isActive;
+        sec.xrefs.put(SecurityIdType.CSP, cusip);
+        sec.xrefs.put(SecurityIdType.ISIN, isin);
+
+        sec.isOperational = isActive;
         sec.version = version;
         return sec;
     }

@@ -1,13 +1,10 @@
 package org.uwh.couplers;
 
-import akka.stream.javadsl.Merge;
 import org.apache.flink.api.common.functions.JoinFunction;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.state.*;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.functions.co.CoMapFunction;
 import org.apache.flink.streaming.api.functions.co.KeyedCoProcessFunction;
 import org.apache.flink.util.Collector;
 
@@ -57,7 +54,7 @@ public class SMCPEnrichment {
         public void processElement2(Security security, Context context, Collector<T> collector) throws Exception {
             System.out.println("Security update");
 
-            if (!security.isActive) return;
+            if (!security.isOperational) return;
 
             String currentSMCP = smcpState.value();
             smcpState.update(security.smcp);
