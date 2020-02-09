@@ -176,6 +176,7 @@ under the License.
 							<goal>schema</goal>
 						</goals>
 						<configuration>
+							<stringType>String</stringType>
 							<sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
 							<outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
 						</configuration>
