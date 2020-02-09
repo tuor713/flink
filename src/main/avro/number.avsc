@@ -1,0 +1,8 @@
+{
+  "namespace": "gsp",
+  "type": "record",
+  "name":  "Numero",
+  "fields": [
+    {"name": "Payload", "type": "long"}
+  ]
+}

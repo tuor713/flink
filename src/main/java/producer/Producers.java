@@ -1,6 +1,7 @@
 package producer;
 
 import gsp.FirmAccount;
+import gsp.Numero;
 import gsp.Offering;
 import gsp.gen.Generators;
 import org.apache.avro.Schema;
@@ -24,7 +25,23 @@ public class Producers {
     private static Logger logger = Logger.getLogger("Producers");
 
     public static void main(String[] args) throws Exception {
-        produceOfferings();
+        // produceOfferings();
+        produceNumbers(1000);
+    }
+
+    private static void produceNumbers(int max) {
+        KafkaProducer<String, Numero> producer = new KafkaProducer<>(
+                kafkaProperties(),
+                Serdes.String().serializer(),
+                new AvroSerializer<Numero>(Numero.getClassSchema(), Numero.class));
+
+        for (long n=0; n<max; n++) {
+            Numero num = new Numero(n);
+            String key = String.valueOf(n);
+            ProducerRecord<String, Numero> rec = new ProducerRecord<>("numbers", key, num);
+            logger.info("Publishing "+n);
+            producer.send(rec);
+        }
     }
 
     private static Properties kafkaProperties() {
