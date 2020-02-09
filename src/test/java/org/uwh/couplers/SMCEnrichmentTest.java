@@ -7,10 +7,7 @@ import org.apache.flink.test.util.MiniClusterResourceConfiguration;
 import org.apache.flink.test.util.MiniClusterWithClientResource;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.*;
 
 import org.uwh.util.CollectSink;
 import org.uwh.util.StreamBuilder;
@@ -30,9 +27,7 @@ public class SMCEnrichmentTest {
     private CollectSink<Price> sink;
 
     @BeforeAll
-    public static void classSetup() throws Exception {
-        flinkCluster.before();;
-    }
+    public static void classSetup() throws Exception { flinkCluster.before(); }
 
     @AfterAll
     public static void classTeardown() {
@@ -75,16 +70,15 @@ public class SMCEnrichmentTest {
     @Test
     public void testMultiPricesThenSecurityEnrichment() throws Exception {
         DataStream<Price> prices = StreamBuilder.empty(Price.class).item(price("ABC", 101)).item(price("ABC", 102)).build(env);
-        DataStream<Security> securities = StreamBuilder.empty(Security.class).delay(50).item(security("123", "", "ABC", true, 1)).build(env);
+        DataStream<Security> securities = StreamBuilder.empty(Security.class).delay(100).item(security("123", "", "ABC", true, 1)).build(env);
 
         SMCPEnrichment.smcEnrichment(prices, securities, p -> p.isin, sec -> sec.xrefs.get(SecurityIdType.ISIN), Price::withSMCP, Price::getIsin, Price.class).addSink(sink);
         env.execute();
 
-        assertEquals(2, sink.size());
+        // only the last update gets through
+        assertEquals(1, sink.size());
         assertEquals("123", sink.get(0).smcp);
-        assertEquals(101, sink.get(0).price, 0.01);
-        assertEquals("123", sink.get(1).smcp);
-        assertEquals(102, sink.get(1).price, 0.01);
+        assertEquals(102, sink.get(0).price, 0.01);
     }
 
     @Test
